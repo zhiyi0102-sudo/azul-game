@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AZUL 花砖物语</title>
+  <style>
+    :root {
+      --bg-dark: #1a1412;
+      --border-gold: #c9a45c;
+      --text-gold: #d4a84b;
+      --text-light: #f5e6d3;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+      background: linear-gradient(180deg, var(--bg-dark) 0%, #0d0a08 100%);
+      min-height: 100vh;
+      color: var(--text-light);
+      background-image: radial-gradient(ellipse at 50% 0%, rgba(139,90,43,0.15) 0%, transparent 60%);
+    }
+    
+    .container { max-width: 1100px; margin: 0 auto; padding: 15px; }
+    
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      letter-spacing: 6px;
+      margin-bottom: 15px;
+      background: linear-gradient(180deg, #fff8e7 0%, var(--text-gold) 50%, #fff8e7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .intro-section { max-width: 650px; margin: 0 auto; }
+    
+    .intro-card {
+      background: linear-gradient(135deg, rgba(45,34,28,0.95), rgba(26,20,18,0.95));
+      border: 1px solid rgba(201,164,92,0.3);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    
+    .intro-card h2 { font-size: 1.3rem; color: var(--text-gold); margin: 20px 0 12px; font-weight: normal; }
+    .intro-card h2:first-child { margin-top: 0; }
+    .intro-card p { line-height: 1.7; color: var(--text-light); opacity: 0.9; }
+    
+    .rule-item { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+    .rule-num {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--text-gold), #a08040);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: bold; color: #1a1412; flex-shrink: 0; margin-top: 2px;
+    }
+    .rule-content strong { display: block; margin-bottom: 6px; font-size: 0.95rem; color: var(--text-gold); }
+    .rule-content p { font-size: 0.88rem; opacity: 0.85; line-height: 1.6; }
+    
+    .btn {
+      display: block; width: 100%; margin-top: 25px; padding: 14px;
+      font-size: 1.1rem; font-family: inherit;
+      background: linear-gradient(135deg, #8b5a2b, #6b4423);
+      border: 2px solid var(--text-gold);
+      border-radius: 30px; color: var(--text-light); cursor: pointer; transition: all 0.3s;
+    }
+    .btn:hover { background: linear-gradient(135deg, #a06b35, #7d5029); }
+    
+    .game-bar {
+      display: flex; justify-content: center; gap: 30px; padding: 12px 20px;
+      background: rgba(45,34,28,0.9); border: 1px solid rgba(201,164,92,0.3);
+      border-radius: 10px; margin-bottom: 15px;
+    }
+    .game-bar .info { font-size: 1rem; }
+    .game-bar b { color: var(--text-gold); }
+    
+    #message {
+      text-align: center; padding: 10px 15px;
+      background: rgba(201,164,92,0.15); border: 1px solid rgba(201,164,92,0.25);
+      border-radius: 8px; margin-bottom: 15px; min-height: 40px;
+      display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+    }
+    
+    .section-title { text-align: center; font-size: 0.85rem; color: #8b7355; margin-bottom: 12px; letter-spacing: 2px; }
+    
+    .factories { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 25px; }
+    .factory {
+      width: 80px; height: 80px;
+      background: linear-gradient(145deg, #3d2d24, #2a1f18);
+      border: 2px solid rgba(201,164,92,0.35);
+      border-radius: 50%; display: flex; flex-wrap: wrap; gap: 3px; padding: 10px;
+      justify-content: center; align-content: center; cursor: pointer; transition: all 0.25s;
+    }
+    .factory:hover { transform: translateY(-3px); border-color: var(--text-gold); }
+    .factory.selected { border-color: #fff; box-shadow: 0 0 15px rgba(201,164,92,0.5); }
+    .factory.empty { opacity: 0.25; pointer-events: none; }
+    
+    .pool-section { text-align: center; margin-bottom: 15px; }
+    .pool-title { font-size: 0.75rem; color: #8b7355; margin-bottom: 8px; }
+    .pool { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; min-height: 30px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; max-width: 300px; margin: 0 auto; }
+    .pool-tile { width: 22px; height: 22px; border-radius: 3px; }
+    .score-info { text-align: center; font-size: 0.9rem; color: #ffd700; margin-bottom: 10px; }
+    
+    .tile {
+      width: 24px; height: 24px; border-radius: 3px;
+      position: relative;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+    
+    .tile-blue { background: linear-gradient(145deg, #1e4d8c, #2563eb); border: 1px solid #3b82f6; }
+    .tile-blue::before { content: '✿'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; color: rgba(255,255,255,0.5); }
+    .tile-yellow { background: linear-gradient(145deg, #d97706, #f59e0b); border: 1px solid #fbbf24; }
+    .tile-yellow::before { content: '☀'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px; color: rgba(255,255,255,0.6); }
+    .tile-red { background: linear-gradient(145deg, #b91c1c, #dc2626); border: 1px solid #ef4444; }
+    .tile-red::before { content: '♥'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; color: rgba(255,255,255,0.5); }
+    .tile-black { background: linear-gradient(145deg, #1f2937, #374151); border: 1px solid #4b5563; }
+    .tile-black::before { content: '◆'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; color: rgba(255,255,255,0.4); }
+    .tile-white { background: linear-gradient(145deg, #d1d5db, #f3f4f6); border: 1px solid #e5e7eb; }
+    .tile-white::before { content: '❄'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; color: #93c5fd; }
+    .tile-marker { background: linear-gradient(145deg, #c9a45c, #d4a84b); border: 2px solid #f4d03f; box-shadow: 0 0 10px rgba(201,164,92,0.6); }
+    .tile-marker::before { content: '★'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px; color: #1a1412; font-weight: bold; }
+    .tile:hover { transform: scale(1.1); }
+    
+    .player-area {
+      background: linear-gradient(135deg, rgba(45,34,28,0.9), rgba(26,20,18,0.9));
+      border: 1px solid rgba(201,164,92,0.2);
+      border-radius: 14px; padding: 18px; margin-bottom: 18px;
+    }
+    .player-area.active { border: 2px solid var(--text-gold); box-shadow: 0 0 20px rgba(201,164,92,0.2); }
+    
+    .player-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(139,115,85,0.3); }
+    .player-name { font-size: 1.15rem; letter-spacing: 1px; }
+    .player-name.current { color: var(--text-gold); }
+    .player-score { font-size: 1.3rem; color: var(--text-gold); font-weight: bold; }
+    
+    .board-layout { display: flex; gap: 15px; align-items: flex-start; }
+    .wall-section { flex-shrink: 0; }
+    .wall-title { font-size: 0.75rem; color: #6b5744; margin-bottom: 6px; text-align: center; }
+    .wall { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 6px; }
+    .wall-cell { width: 26px; height: 26px; background: rgba(255,255,255,0.05); border: 1px solid rgba(139,115,85,0.2); border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+    .wall-cell.filled { background: transparent; border: none; }
+    .wall-cell .tile { width: 24px; height: 24px; }
+    .wall-cell.expected { /* opacity: 0.3; */ }
+    
+    .right-section { flex: 1; }
+    .pattern-title { font-size: 0.75rem; color: #6b5744; margin-bottom: 6px; }
+    .pattern-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+    .row-num { width: 18px; font-size: 0.75rem; color: #6b5744; text-align: center; }
+    .pattern-cells { display: flex; gap: 3px; }
+    .pattern-cell { width: 30px; height: 30px; background: rgba(0,0,0,0.35); border: 1px solid rgba(139,115,85,0.25); border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+    .pattern-cell.clickable { cursor: pointer; border: 2px dashed rgba(201,164,92,0.5); }
+    .pattern-cell.clickable:hover { border-color: var(--text-gold); }
+    .pattern-cell .tile { width: 26px; height: 26px; }
+    
+    .completed-title { font-size: 0.75rem; color: #6b5744; margin: 12px 0 6px; }
+    .completed-row { display: flex; gap: 3px; flex-wrap: wrap; }
+    .completed-tile { width: 22px; height: 22px; border-radius: 3px; }
+    
+    .floor-title { font-size: 0.75rem; color: #6b5744; margin: 12px 0 6px; display: flex; justify-content: space-between; }
+    .floor-penalty { font-size: 0.7rem; color: #8b7355; }
+    .floor { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; background: rgba(0,0,0,0.35); padding: 6px; border-radius: 6px; }
+    .floor-cell { width: 24px; height: 24px; background: rgba(255,255,255,0.05); border: 1px dashed rgba(139,115,85,0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #6b5744; }
+    .floor-cell.filled { background: transparent; border: none; }
+    .floor-cell .tile { width: 20px; height: 20px; }
+    
+    .score-hint { font-size: 0.75rem; color: #8b7355; margin-top: 8px; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 4px; text-align: center; }
+    .score-hint span { color: var(--text-gold); }
+    
+    .color-btn { width: 34px; height: 34px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; margin: 0 4px; transition: all 0.2s; }
+    .color-btn:hover { transform: scale(1.1); }
+    .color-btn.selected { border-color: #fff; transform: scale(1.05); }
+    
+    .action-btn {
+      display: block; margin: 20px auto 0; padding: 12px 35px;
+      font-size: 1rem; font-family: inherit;
+      background: linear-gradient(135deg, #8b5a2b, #6b4423);
+      border: 2px solid var(--text-gold); border-radius: 25px; color: var(--text-light); cursor: pointer;
+    }
+    .action-btn:disabled { background: #3a3a3a; border-color: #555; color: #777; cursor: not-allowed; }
+    .action-btn:hover:not(:disabled) { background: linear-gradient(135deg, #a06b35, #7d5029); }
+    
+    #gameEnd { display: none; text-align: center; padding: 40px 20px; }
+    #gameEnd h2 { font-size: 2rem; margin-bottom: 30px; color: var(--text-gold); }
+    .winner { font-size: 1.3rem; margin: 12px 0; }
+    .winner:first-child { color: #ffd700; font-size: 1.6rem; }
+    
+    @media (max-width: 700px) {
+      .container { padding: 10px; }
+      h1 { font-size: 1.6rem; }
+      .board-layout { flex-direction: column; }
+      .wall { grid-template-columns: repeat(5, 1fr); }
+      .wall-cell { width: 22px; height: 22px; }
+      .pattern-cell { width: 26px; height: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AZUL</h1>
+    
+    <div class="intro-section" id="introSection">
+      <div class="intro-card">
+        <h2>🎨 游戏背景</h2>
+        <p>1567年，葡萄牙国王塞巴斯蒂安五世从西班牙阿尔罕布拉宫带回美丽装饰瓷砖，玩家扮演瓷砖艺术家为国王建造埃武拉皇宫。</p>
+        
+        <h2>📖 游戏规则</h2>
+        <div class="rule-item">
+          <div class="rule-num">1</div>
+          <div class="rule-content"><strong>拿取瓷砖</strong><p>从工厂展示区或桌面中央选择一种颜色的所有瓷砖 <br>（每回合仅可选一个地点）</p></div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">2</div>
+          <div class="rule-content"><strong>放入花纹排</strong><p>将瓷砖放入自己板块的一行，同行必须同色 <br>从右向左依次放置，若颜色已在墙面则无法放入</p></div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">3</div>
+          <div class="rule-content"><strong>多余放入地板</strong><p>放不下的瓷砖掉入地板区，7个位置依次扣1~7分 <br>地板满后会被清空</p></div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">4</div>
+          <div class="rule-content"><strong>铺到墙壁</strong><p>花纹排填满时，最右侧的瓷砖移至墙壁对应位置 <br>根据相邻瓷砖数加分：无相邻得1分，相邻加总</p></div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">5</div>
+          <div class="rule-content"><strong>游戏结束与奖励</strong><p><strong>任一玩家完成一整行时游戏立即结束</strong> <br>额外奖励：完成一行 +2分 ｜ 完成一列 +7分 ｜ 同色集齐 +10分</p></div>
+        </div>
+        
+        <button class="btn" onclick="startGame()">开始游戏</button>
+      </div>
+    </div>
+    
+    <div id="gameMain" style="display:none;">
+      <div class="game-bar">
+        <div class="info">轮次: <b id="roundNum">1</b></div>
+        <div class="info">当前: <b id="currentPlayerName">你</b></div>
+      </div>
+      <div class="score-info">奖励规则：完成一行 +2分；完成一列 +7分；收集同色5块 +10分。</div>
+      <div id="message">点击工厂选择瓷砖</div>
+      
+      <div class="section-title">工厂</div>
+      <div class="pool-section">
+        <div class="pool-title">剩余瓷砖（中部）</div>
+        <div class="pool" id="pool"></div>
+      </div>
+      <div class="factories" id="factories"></div>
+      
+      <div class="players" id="players"></div>
+      
+      <button class="action-btn" id="placeBtn" onclick="placeTiles()" disabled>确认放置</button>
+      
+      <div id="gameEnd">
+        <h2>🏆 游戏结束</h2>
+        <div id="ranking"></div>
+        <button class="btn" onclick="location.reload()">再来一局</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const COLORS = ['blue', 'yellow', 'red', 'black', 'white'];
+    const COLOR_NAMES = { blue: '蓝', yellow: '黄', red: '红', black: '黑', white: '白' };
+    // order used for wall pattern; each subsequent row is a right rotation of this list
+    const WALL_ORDER = ['blue', 'yellow', 'red', 'black', 'white'];
+    function getWallCol(row, color) {
+      const idx = WALL_ORDER.indexOf(color);
+      return (idx + row) % 5;
+    }
+    function expectedColor(row, col) {
+      const idx = (col - row + 5) % 5;
+      return WALL_ORDER[idx];
+    }
+    function getExpectedBg(row, col) {
+      const expect = expectedColor(row, col);
+      const colors = {
+        blue: 'rgba(33,150,243,0.3)',
+        yellow: 'rgba(255,235,59,0.3)',
+        red: 'rgba(244,67,54,0.3)',
+        black: 'rgba(33,33,33,0.3)',
+        white: 'rgba(245,245,245,0.3)'
+      };
+      return colors[expect];
+    }
+    const FLOOR_PENALTY = [-1, -2, -3, -4, -5, -6, -7];
+    
+    let currentPlayer = 0, round = 1, gameState = {}, selectedFactory = -1, selectedColor = null, selectedRow = -1, isSelectingFromPool = false;
+    
+    function initGameState() {
+      gameState = {
+        players: [
+          { name: '你', patternRows: [[],[],[],[],[]], wall: Array(5).fill(null).map(()=>Array(5).fill(null)), floor: [], completed: [], score: 0 },
+          { name: '电脑', patternRows: [[],[],[],[],[]], wall: Array(5).fill(null).map(()=>Array(5).fill(null)), floor: [], completed: [], score: 0 }
+        ],
+        factories: [],
+        pool: [],  // 中间废弃区域
+        gameEndsAfterThisRound: false,
+        startMarkerWithPlayer: -1,  // -1=在pool, 0/1=对应玩家
+        poolTakenThisRound: [false, false],  // 本轮是否从pool拿过
+        firstToTakePool: -1  // 本轮第一个从pool拿砖的玩家
+      };
+      for (let i = 0; i < 5; i++) {
+        const tiles = [];
+        for (let j = 0; j < 4; j++) tiles.push(COLORS[Math.floor(Math.random() * COLORS.length)]);
+        gameState.factories.push(tiles);
+      }
+    }
+    
+    function startGame() {
+      document.getElementById('introSection').style.display = 'none';
+      document.getElementById('gameMain').style.display = 'block';
+      initGameState();
+      render();
+      showMessage("你的回合！点击工厂选择瓷砖（工厂都空后可点击中央pool）");
+    }
+    
+    function getTileClass(c) { return c === 'marker' ? 'tile tile-marker' : `tile tile-${c}`; }
+    
+    function selectFactory(index) {
+      if (currentPlayer !== 0) return;
+      const factory = gameState.factories[index];
+      if (!factory || factory.length === 0) return;
+      selectedFactory = index; selectedColor = null; selectedRow = -1; isSelectingFromPool = false;
+      const colors = [...new Set(factory)];
+      let msg = '选择颜色: ';
+      colors.forEach(c => msg += `<button class="color-btn ${getTileClass(c)}" onclick="selectColor('${c}')"></button>`);
+      showMessage(msg);
+      render();
+    }
+    
+    function selectPool() {
+      if (currentPlayer !== 0) return;
+      if (gameState.pool.length === 0) return;
+      selectedFactory = -1; selectedColor = null; selectedRow = -1; isSelectingFromPool = true;
+      const poolColors = [...new Set(gameState.pool)];
+      let msg = '(从pool拿)选择颜色: ';
+      poolColors.forEach(c => msg += `<button class="color-btn ${getTileClass(c)}" onclick="selectColor('${c}')"></button>`);
+      showMessage(msg);
+      render();
+    }
+    
+    function selectColor(color) {
+      selectedColor = color; selectedRow = -1;
+      const player = gameState.players[0];
+      
+      // 检查是否有可用的行
+      let hasAvailableRow = false;
+      for (let i = 0; i < 5; i++) {
+        const row = player.patternRows[i];
+        if (row.length < i + 1) {  // 行未满
+          const rowHasOther = row.length > 0 && row.some(c => c !== color);
+          const col = getWallCol(i, color);
+          if (!rowHasOther && player.wall[i][col] === null) {  // 可以放入
+            hasAvailableRow = true;
+            break;
+          }
+        }
+      }
+      
+      let msg = isSelectingFromPool 
+        ? `(pool)已选 ${COLOR_NAMES[color]} 色`
+        : `已选 ${COLOR_NAMES[color]} 色`;
+      
+      if (hasAvailableRow) {
+        msg += '，点击左侧行号选择放置位置';
+      } else {
+        msg += '，无可用行，<button class="color-btn" onclick="selectFloor()" style="background: #8b5a2b; margin-left: 10px;">放入地板</button>';
+      }
+      
+      showMessage(msg);
+      document.getElementById('placeBtn').disabled = true;
+      render();
+    }
+    
+    function selectFloor() {
+      if (selectedColor === null) return;
+      const player = gameState.players[0];
+      selectedRow = -2;  // 用-2表示放地板
+      
+      let tilesToPlace = 0;
+      if (isSelectingFromPool) {
+        tilesToPlace = gameState.pool.filter(c => c === selectedColor).length;
+      } else {
+        tilesToPlace = gameState.factories[selectedFactory].filter(c => c === selectedColor).length;
+      }
+      
+      showMessage(`将 ${tilesToPlace} 块${COLOR_NAMES[selectedColor]}色放入地板`);
+      document.getElementById('placeBtn').disabled = false;
+      render();
+    }
+    
+    function selectRow(rowIndex) {
+      if (currentPlayer !== 0 || selectedColor === null) return;
+      const player = gameState.players[0];
+      const row = player.patternRows[rowIndex];
+      if (row.length >= rowIndex + 1) { showMessage(`第${rowIndex+1}行已满！`); return; }
+      // 只有当行中已有其他颜色时禁止
+      const rowHasOther = row.length > 0 && row.some(c => c !== selectedColor);
+      if (rowHasOther) { showMessage(`第${rowIndex+1}行已有其他颜色，无法放置`); return; }
+      // 检查墙上对应位置是否已被占用
+      const col = getWallCol(rowIndex, selectedColor);
+      if (player.wall[rowIndex][col] !== null) { showMessage(`墙上该位置已被占用`); return; }
+      selectedRow = rowIndex;
+      // 计算将要放置的瓷砖数
+      let tilesToPlace = 0;
+      if (isSelectingFromPool) {
+        tilesToPlace = gameState.pool.filter(c => c === selectedColor).length;
+      } else {
+        tilesToPlace = gameState.factories[selectedFactory].filter(c => c === selectedColor).length;
+      }
+      const spaceLeft = (rowIndex + 1) - row.length;
+      showMessage(`将在第${rowIndex+1}行放置 ${Math.min(tilesToPlace, spaceLeft)} 块${COLOR_NAMES[selectedColor]}色`);
+      document.getElementById('placeBtn').disabled = false;
+      render();
+    }
+    
+    function placeTiles() {
+      if (selectedColor === null || selectedRow === -1) return;
+      const player = gameState.players[0];
+      let tiles = [];
+      
+      if (isSelectingFromPool) {
+        // 从pool拿砖
+        if (gameState.pool.length === 0) return;
+        tiles = gameState.pool.filter(c => c === selectedColor);
+        // 检查是否是本轮第一个从pool拿砖的玩家
+        if (!gameState.poolTakenThisRound[0]) {
+          gameState.poolTakenThisRound[0] = true;
+          gameState.firstToTakePool = 0;
+        }
+        // 从pool中移除这些砖和剩余砖
+        const remaining = gameState.pool.filter(c => c !== selectedColor);
+        gameState.pool = remaining;
+      } else {
+        // 从工厂拿砖
+        if (selectedFactory === -1) return;
+        const factory = gameState.factories[selectedFactory];
+        tiles = factory.filter(c => c === selectedColor);
+        // 剩余瓷砖放到中间pool
+        const remaining = factory.filter(c => c !== selectedColor);
+        gameState.pool.push(...remaining);
+        gameState.factories[selectedFactory] = [];
+      }
+      
+      // 如果selectedRow === -2，表示全部放入地板
+      if (selectedRow === -2) {
+        player.floor.push(...tiles);
+        // 如果本轮第一个从pool拿砖且还没有标记，添加起始玩家标记到地板最左
+        if (gameState.firstToTakePool === 0 && gameState.startMarkerWithPlayer === -1) {
+          player.floor.unshift('marker');
+          gameState.startMarkerWithPlayer = 0;
+        }
+      } else {
+        // 选中了具体的行
+        const row = player.patternRows[selectedRow];
+        const spaceLeft = (selectedRow + 1) - row.length;
+        const toPlace = Math.min(tiles.length, spaceLeft);
+        
+        for (let i = 0; i < toPlace; i++) row.push(selectedColor);
+        for (let i = toPlace; i < tiles.length; i++) player.floor.push(selectedColor);
+        
+        // 如果本轮第一个从pool拿砖，添加起始玩家标记到地板最左
+        if (gameState.firstToTakePool === 0 && gameState.startMarkerWithPlayer === -1) {
+          player.floor.unshift('marker');
+          gameState.startMarkerWithPlayer = 0;
+        }
+      }
+      
+      currentPlayer = 1; selectedFactory = -1; selectedColor = null; selectedRow = -1; isSelectingFromPool = false;
+      document.getElementById('placeBtn').disabled = true;
+      render();
+      
+      // 检查是否工厂和pool都空了（轮次结束）
+      if (gameState.factories.every(f => f.length === 0) && gameState.pool.length === 0) {
+        setTimeout(processEndRound, 900);
+      } else {
+        setTimeout(aiTurn, 900);
+      }
+    }
+    
+    function aiTurn() {
+      const ai = gameState.players[1];
+      const factories = gameState.factories.filter(f => f.length > 0);
+      
+      // 如果工厂都空了但pool不空，从pool拿砖
+      if (factories.length === 0 && gameState.pool.length > 0) {
+        const poolColors = [...new Set(gameState.pool)];
+        const color = poolColors[Math.floor(Math.random() * poolColors.length)];
+        const tiles = gameState.pool.filter(c => c === color);
+        
+        // 检查是否是本轮第一个从pool拿砖的玩家
+        if (!gameState.poolTakenThisRound[1]) {
+          gameState.poolTakenThisRound[1] = true;
+          gameState.firstToTakePool = 1;
+        }
+        
+        // 从pool中移除这些砖
+        const remaining = gameState.pool.filter(c => c !== color);
+        gameState.pool = remaining;
+        
+        // AI选择放置行
+        let targetRow = -1;
+        for (let i = 0; i < 5; i++) {
+          const row = ai.patternRows[i];
+          const canUse = row.length === 0 || row.every(c => c === color);
+          const col = getWallCol(i, color);
+          if (row.length < i + 1 && canUse && ai.wall[i][col] === null) { targetRow = i; break; }
+        }
+        
+        if (targetRow === -1) ai.floor.push(...tiles);
+        else {
+          const row = ai.patternRows[targetRow];
+          const spaceLeft = (targetRow + 1) - row.length;
+          const toPlace = Math.min(tiles.length, spaceLeft);
+          for (let i = 0; i < toPlace; i++) row.push(color);
+          for (let i = toPlace; i < tiles.length; i++) ai.floor.push(tiles[i]);
+        }
+        
+        // 如果本轮第一个从pool拿砖，添加起始玩家标记
+        if (gameState.firstToTakePool === 1 && gameState.startMarkerWithPlayer === -1) {
+          ai.floor.unshift('marker');
+          gameState.startMarkerWithPlayer = 1;
+        }
+        
+        currentPlayer = 0;
+        render();
+        showMessage("你的回合！点击工厂或pool选择瓷砖");
+        return;
+      }
+      
+      if (factories.length === 0) { processEndRound(); return; }
+      
+      const fIdx = Math.floor(Math.random() * factories.length);
+      const actualIdx = gameState.factories.indexOf(factories[fIdx]);
+      const factory = gameState.factories[actualIdx];
+      const colors = [...new Set(factory)];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const tiles = factory.filter(c => c === color);
+      
+      let targetRow = -1;
+      for (let i = 0; i < 5; i++) {
+        const row = ai.patternRows[i];
+        const canUse = row.length === 0 || row.every(c => c === color);
+        const col = getWallCol(i, color);
+        if (row.length < i + 1 && canUse && ai.wall[i][col] === null) { targetRow = i; break; }
+      }
+      
+      if (targetRow === -1) ai.floor.push(...tiles);
+      else {
+        const row = ai.patternRows[targetRow];
+        const spaceLeft = (targetRow + 1) - row.length;
+        const toPlace = Math.min(tiles.length, spaceLeft);
+        for (let i = 0; i < toPlace; i++) row.push(color);
+        for (let i = toPlace; i < tiles.length; i++) ai.floor.push(tiles[i]);
+      }
+      
+      // 剩余瓷砖放到中间pool
+      const aiRemaining = factory.filter(c => c !== color);
+      gameState.pool.push(...aiRemaining);
+      gameState.factories[actualIdx] = [];
+      currentPlayer = 0;
+      render();
+      if (gameState.factories.every(f => f.length === 0) && gameState.pool.length === 0) setTimeout(processEndRound, 600);
+      else showMessage("你的回合！点击工厂选择瓷砖");
+    }
+    
+    function processEndRound() {
+      for (let player of gameState.players) {
+        // 地板区扣分：前7个位置分别扣 -1, -2, -3, -4, -5, -6, -7
+        // marker 和瓷砖都占据地板位置并对应扣分
+        for (let i = 0; i < player.floor.length && i < 7; i++) {
+          player.score += FLOOR_PENALTY[i];
+        }
+        // 8个以上的瓷砖扣-7分
+        for (let i = 7; i < player.floor.length; i++) {
+          player.score -= 7;
+        }
+
+        let hasCompleteRow = false;
+        for (let i = 0; i < 5; i++) {
+          if (player.patternRows[i].length === i + 1) {
+            const color = player.patternRows[i][0];
+            const col = getWallCol(i, color);
+            player.wall[i][col] = color;
+            // score adjacency
+            let points = 1;
+            for (let c = col-1; c >= 0 && player.wall[i][c] === color; c--) points++;
+            for (let c = col+1; c < 5 && player.wall[i][c] === color; c++) points++;
+            for (let r = i-1; r >= 0 && player.wall[r][col] === color; r--) points++;
+            for (let r = i+1; r < 5 && player.wall[r][col] === color; r++) points++;
+            player.score += points;
+            player.patternRows[i] = [];
+            hasCompleteRow = true;
+          }
+        }
+        player.floor = [];
+        // Check if any player completed a full horizontal row - if so, game ends after this round
+        if (hasCompleteRow) {
+          for (let r = 0; r < 5; r++) {
+            if (player.wall[r].every(c => c !== null)) {
+              gameState.gameEndsAfterThisRound = true;
+              break;
+            }
+          }
+        }
+      }
+
+      gameState.pool = [];
+      gameState.poolTakenThisRound = [false, false];
+      gameState.firstToTakePool = -1;
+      gameState.startMarkerWithPlayer = -1;  // 重置起始玩家标记，下一轮重新计算
+
+      // Check end game condition
+      if (gameState.gameEndsAfterThisRound) {
+        // Calculate bonuses
+        for (let player of gameState.players) {
+          // full rows
+          for (let r = 0; r < 5; r++) {
+            if (player.wall[r].every(c => c)) player.score += 2;
+          }
+          // full cols
+          for (let c = 0; c < 5; c++) {
+            if (player.wall.every(r => r[c])) player.score += 7;
+          }
+          // full colors
+          COLORS.forEach(color => {
+            let count = 0;
+            for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) if (player.wall[r][c] === color) count++;
+            if (count === 5) player.score += 10;
+          });
+        }
+        endGame();
+        return;
+      }
+      
+      round++;
+      gameState.factories = [];  // 清空旧工厂
+      gameState.gameEndsAfterThisRound = false;  // 重置游戏结束标志
+      gameState.poolTakenThisRound = [false, false];  // 重置pool标志
+      gameState.firstToTakePool = -1;  // 重置第一个从pool拿砖的玩家
+      for (let i = 0; i < 5; i++) {
+        const tiles = [];
+        for (let j = 0; j < 4; j++) tiles.push(COLORS[Math.floor(Math.random() * COLORS.length)]);
+        gameState.factories.push(tiles);
+      }
+      
+      currentPlayer = 0;
+      render();
+      const scoreMsg = gameState.players.map(p => `${p.name}: ${p.score}分`).join(' | ');
+      showMessage(`第 ${round} 轮开始！当前分数: ${scoreMsg}`);
+    }
+    
+    function endGame() {
+      document.querySelector('.section-title').style.display = 'none';
+      document.getElementById('factories').style.display = 'none';
+      document.getElementById('players').style.display = 'none';
+      document.getElementById('placeBtn').style.display = 'none';
+      document.getElementById('gameEnd').style.display = 'block';
+      
+      const sorted = [...gameState.players].sort((a, b) => b.score - a.score);
+      document.getElementById('ranking').innerHTML = sorted.map((p, i) => `<div class="winner">${i + 1}. ${p.name}: ${p.score}分</div>`).join('');
+    }
+    
+    function render() {
+      document.getElementById('roundNum').textContent = round;
+      document.getElementById('currentPlayerName').textContent = currentPlayer === 0 ? '你' : '电脑';
+      
+      // 中间废弃区域
+      let poolHtml = '';
+      if (gameState.pool.length > 0) {
+        poolHtml = gameState.pool.map(c => `<div class="pool-tile ${getTileClass(c)}"></div>`).join('');
+      }
+      
+      // 工厂
+      let factoriesHtml = '';
+      gameState.factories.forEach((factory, i) => {
+        const tiles = factory.map(c => `<div class="${getTileClass(c)}"></div>`).join('');
+        const cls = selectedFactory === i ? 'factory selected' : 'factory';
+        factoriesHtml += `<div class="${cls} ${factory.length === 0 ? 'empty' : ''}" onclick="selectFactory(${i})">${tiles}</div>`;
+      });
+      // 显示pool为可点击的选项（只要pool有砖）
+      if (gameState.pool.length > 0 && currentPlayer === 0) {
+        const poolTiles = gameState.pool.map(c => `<div class="${getTileClass(c)}"></div>`).join('');
+        const poolCls = isSelectingFromPool ? 'factory selected' : 'factory';
+        factoriesHtml += `<div class="${poolCls}" style="border-color: #ffd700;" onclick="selectPool()" title="从中央pool拿砖">${poolTiles}</div>`;
+      }
+      document.getElementById('factories').innerHTML = factoriesHtml;
+      document.getElementById('pool').innerHTML = poolHtml || '<span style="color:#555;font-size:0.8rem">空</span>';
+      
+      // 玩家
+      let playersHtml = '';
+      gameState.players.forEach((player, idx) => {
+        const isActive = idx === currentPlayer;
+        const isPlayer = idx === 0;
+        
+        // 墙壁
+        let wallHtml = '';
+        for (let r = 0; r < 5; r++) {
+          for (let c = 0; c < 5; c++) {
+            const color = player.wall[r][c];
+            if (color) wallHtml += `<div class="wall-cell filled"><div class="${getTileClass(color)}"></div></div>`;
+            else {
+              const expect = expectedColor(r, c);
+              wallHtml += `<div class="wall-cell expected" style="background-color: ${getExpectedBg(r, c)};" title="应为${COLOR_NAMES[expect]}"></div>`;
+            }
+          }
+        }
+        
+        // 花纹排
+        let patternHtml = '';
+        player.patternRows.forEach((row, i) => {
+          let cells = '';
+          for (let j = 0; j <= i; j++) {
+            if (j < row.length) cells += `<div class="pattern-cell"><div class="${getTileClass(row[j])}"></div></div>`;
+            else {
+              const canClick = isPlayer && currentPlayer === 0 && selectedColor !== null;
+              const canPlaceHere = canClick && row.length < i + 1 && (row.length === 0 || row.every(c=>c===selectedColor)) && !player.wall[i].includes(selectedColor);
+              cells += canPlaceHere ? `<div class="pattern-cell clickable" onclick="selectRow(${i})"></div>` : `<div class="pattern-cell"></div>`;
+            }
+          }
+          patternHtml += `<div class="pattern-row"><span class="row-num">${i+1}</span><div class="pattern-cells">${cells}</div></div>`;
+        });
+        
+        // 已完成
+        let completedHtml = player.completed.map(c => `<div class="completed-tile ${getTileClass(c)}"></div>`).join('');
+        
+        // 地板
+        let floorHtml = '';
+        for (let i = 0; i < 7; i++) {
+          const item = player.floor[i];
+          if (!item) {
+            floorHtml += `<div class="floor-cell">${FLOOR_PENALTY[i]}</div>`;
+          } else if (item === 'marker') {
+            floorHtml += `<div class="floor-cell filled"><div class="${getTileClass('marker')}"></div></div>`;
+          } else {
+            floorHtml += `<div class="floor-cell filled"><div class="${getTileClass(item)}"></div></div>`;
+          }
+        }
+        
+        // 分数提示
+        let hint = '';
+        if (isActive && !isPlayer) hint = '<div class="score-hint">电脑思考中...</div>';
+        
+        playersHtml += `
+          <div class="player-area ${isActive ? 'active' : ''}">
+            <div class="player-header">
+              <div class="player-name ${isPlayer ? 'current' : ''}">${player.name}</div>
+              <div class="player-score">${player.score}</div>
+            </div>
+            <div class="board-layout">
+              <div class="wall-section">
+                <div class="wall-title">墙壁</div>
+                <div class="wall">${wallHtml}</div>
+              </div>
+              <div class="right-section">
+                <div class="pattern-title">花纹排</div>
+                ${patternHtml}
+                <div class="completed-title">已完成</div>
+                <div class="completed-row">${completedHtml || '<span style="color:#555;font-size:0.8rem">无</span>'}</div>
+                <div class="floor-title"><span>地板</span><span class="floor-penalty">扣分</span></div>
+                <div class="floor">${floorHtml || '<span style="color:#555;font-size:0.8rem">空</span>'}</div>
+                ${hint}
+              </div>
+            </div>
+          </div>`;
+      });
+      document.getElementById('players').innerHTML = playersHtml;
+    }
+    
+    function showMessage(msg) { document.getElementById('message').innerHTML = msg; }
+    
+    
+  </script>
+</body>
+</html>
