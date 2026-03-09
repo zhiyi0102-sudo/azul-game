@@ -3,6 +3,32 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
+
+// 日志目录
+const LOG_DIR = path.join(__dirname, 'logs');
+if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR);
+
+// Winston 日志配置
+const winston = require('winston');
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: path.join(LOG_DIR, 'error.log'), level: 'error' }),
+    new winston.transports.File({ filename: path.join(LOG_DIR, 'combined.log') })
+  ]
+});
+
+// 开发环境同时输出到控制台
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.simple()
+  }));
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -10,6 +36,8 @@ const wss = new WebSocket.Server({ server });
 
 const AUTH_CODE = 'azul2026';
 const sessions = new Set();
+
+logger.info('Azul server starting...');
 
 app.use(express.json());
 
@@ -72,20 +100,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // WebSocket
 wss.on('connection', (ws, req) => {
-  console.log('Player connected');
+  logger.info('Player connected', { ip: req.socket.remoteAddress });
   ws.on('message', (message) => {
     const msg = JSON.parse(message);
+    logger.debug('Received message', { type: msg.type });
     switch (msg.type) {
       case 'join':
         if (gameState.players.length < 4 && gameState.phase === 'lobby') {
           const player = { id: gameState.players.length, name: msg.name, template: JSON.parse(JSON.stringify(TEMPLATE)), score: 0, ws: ws };
           gameState.players.push(player);
+          logger.info('Player joined', { playerId: player.id, playerName: player.name });
           ws.send(JSON.stringify({ type: 'joined', data: { playerId: player.id, playerName: player.name } }));
           broadcast('playerJoined', { players: gameState.players.map(p => ({ id: p.id, name: p.name })) });
         }
         break;
       case 'start':
         if (gameState.players.length >= 2 && gameState.phase === 'lobby') {
+          logger.info('Game starting', { playerCount: gameState.players.length });
           gameState.phase = 'draw';
           gameState.rounds = 0;
           gameState.bag = initBag();
@@ -221,4 +252,4 @@ function broadcastState() {
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => { console.log(`Azul 服务器运行在 http://localhost:${PORT}`); console.log(`访问密码: ${AUTH_CODE}`); });
+server.listen(PORT, () => { logger.info(`Azul 服务器运行在 http://localhost:${PORT}`); logger.info(`访问密码: ${AUTH_CODE}`); });
